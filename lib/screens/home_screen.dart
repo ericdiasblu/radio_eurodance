@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:radio_eurodance/models/playlist.dart'; // Importa a função para obter as playlists
+import 'package:radio_eurodance/models/playlist.dart';
+import '../audio/provider/audio_provider.dart';
+import '../layout/audio_progress_bar.dart';
 import '../models/music.dart';
 import 'song_screen.dart';
 
@@ -9,18 +11,38 @@ class HomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final audioProvider = Provider.of<AudioProvider>(context);
+
+    // Configura a playlist e carrega os favoritos ao iniciar a tela
+    audioProvider.setPlaylist(playlists.expand((playlist) => playlist.songs).toList());
+
     return Scaffold(
+      backgroundColor: Colors.black, // Fundo preto
       appBar: AppBar(
-        title: Text('Playlists'),
+        title: Text(
+          'Rádio EuroDance',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: Color(0xFFC1FF72), // Verde-limão principal
+          ),
+        ),
+        backgroundColor: Colors.black,
+        elevation: 0,
+        centerTitle: true,
       ),
-      body: ListView.builder(
-        itemCount: playlists.length,
-        itemBuilder: (context, index) {
-          return Card(
-            child: ListTile(
-              title: Text(playlists[index].name),
+      body: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        child: GridView.builder(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2, // Exibe as playlists em duas colunas
+            crossAxisSpacing: 12,
+            mainAxisSpacing: 12,
+            childAspectRatio: 0.85,
+          ),
+          itemCount: playlists.length,
+          itemBuilder: (context, index) {
+            return GestureDetector(
               onTap: () {
-                // Aqui você deve garantir que o Provider esteja configurado corretamente
                 Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -28,10 +50,48 @@ class HomeScreen extends StatelessWidget {
                   ),
                 );
               },
-            ),
-          );
-        },
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Color(0xFF1E1E1E), // Cinza escuro para contraste
+                  borderRadius: BorderRadius.circular(12),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.3),
+                      blurRadius: 6,
+                      spreadRadius: 2,
+                      offset: Offset(0, 3),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.music_note,
+                      size: 50,
+                      color: Color(0xFFC1FF72), // Ícone verde-limão
+                    ),
+                    SizedBox(height: 10),
+                    Text(
+                      playlists[index].name,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        color: Colors.white, // Texto branco para contraste
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        ),
       ),
+      bottomNavigationBar: audioProvider.currentSongTitle.isNotEmpty
+          ? AudioProgressBar() // Exibe a barra de progresso se a música estiver tocando
+          : null, // Se não houver música tocando, não exibe a barra de progresso
     );
   }
 }
+
