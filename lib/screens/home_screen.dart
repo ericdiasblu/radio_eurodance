@@ -13,17 +13,19 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final audioProvider = Provider.of<AudioProvider>(context);
 
-    // Configura a playlist e carrega os favoritos ao iniciar a tela
-    audioProvider.setPlaylist(playlists.expand((playlist) => playlist.songs).toList());
+    // Verifica se a playlist já foi configurada
+    if (audioProvider.playlist.isEmpty) {
+      audioProvider.setPlaylist(playlists.expand((playlist) => playlist.songs).toList());
+    }
 
     return Scaffold(
-      backgroundColor: Colors.black, // Fundo preto
+      backgroundColor: Colors.black,
       appBar: AppBar(
         title: Text(
           'Rádio EuroDance',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            color: Color(0xFFC1FF72), // Verde-limão principal
+            color: Color(0xFFC1FF72),
           ),
         ),
         backgroundColor: Colors.black,
@@ -34,7 +36,7 @@ class HomeScreen extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
         child: GridView.builder(
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2, // Exibe as playlists em duas colunas
+            crossAxisCount: 2,
             crossAxisSpacing: 12,
             mainAxisSpacing: 12,
             childAspectRatio: 0.85,
@@ -52,7 +54,7 @@ class HomeScreen extends StatelessWidget {
               },
               child: Container(
                 decoration: BoxDecoration(
-                  color: Color(0xFF1E1E1E), // Cinza escuro para contraste
+                  color: Color(0xFF1E1E1E),
                   borderRadius: BorderRadius.circular(12),
                   boxShadow: [
                     BoxShadow(
@@ -69,14 +71,14 @@ class HomeScreen extends StatelessWidget {
                     Icon(
                       Icons.music_note,
                       size: 50,
-                      color: Color(0xFFC1FF72), // Ícone verde-limão
+                      color: Color(0xFFC1FF72),
                     ),
                     SizedBox(height: 10),
                     Text(
                       playlists[index].name,
                       textAlign: TextAlign.center,
                       style: TextStyle(
-                        color: Colors.white, // Texto branco para contraste
+                        color: Colors.white,
                         fontSize: 16,
                         fontWeight: FontWeight.w600,
                       ),
@@ -89,9 +91,8 @@ class HomeScreen extends StatelessWidget {
         ),
       ),
       bottomNavigationBar: audioProvider.currentSongTitle.isNotEmpty
-          ? AudioProgressBar() // Exibe a barra de progresso se a música estiver tocando
-          : null, // Se não houver música tocando, não exibe a barra de progresso
+          ? AudioProgressBar()
+          : null,
     );
   }
 }
-

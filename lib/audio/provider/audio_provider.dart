@@ -7,8 +7,24 @@ import 'package:shared_preferences/shared_preferences.dart';
 class AudioProvider with ChangeNotifier {
   final AudioPlayer _audioPlayer = AudioPlayer();
 
+  // Getter para o AudioPlayer
+  AudioPlayer get audioPlayer => _audioPlayer;
+
   // Playlist completa (todas as músicas carregadas)
   List<Song> _playlist = [];
+
+  // Adicione este método à sua classe AudioProvider
+
+  List<Playlist> getAllPlaylists() {
+    // Criando uma playlist principal com todas as músicas disponíveis
+    Playlist mainPlaylist = Playlist('Todas as músicas', _playlist);
+
+    // Se você tiver playlists categorizadas no futuro, pode adicioná-las aqui
+    List<Playlist> allPlaylists = [mainPlaylist];
+
+    // Retorne todas as playlists disponíveis
+    return allPlaylists;
+  }
 
   // Lista de reprodução atualmente ativa (pode ser a playlist completa ou a lista de favoritos)
   List<Song> _currentPlayingList = [];
@@ -21,6 +37,8 @@ class AudioProvider with ChangeNotifier {
 
   // Lista para armazenar músicas favoritas
   List<Song> _favorites = [];
+
+  bool _isNextSongCalled = false; // Variável de controle
 
   AudioProvider() {
     _audioPlayer.positionStream.listen((position) {
@@ -39,11 +57,20 @@ class AudioProvider with ChangeNotifier {
     _audioPlayer.playerStateStream.listen((state) {
       _isPlaying = state.playing;
       notifyListeners();
-      if (state.processingState == ProcessingState.completed) {
+
+      // Verifica se a música terminou e evita chamadas duplicadas
+      if (state.processingState == ProcessingState.completed && !_isNextSongCalled) {
+        _isNextSongCalled = true;
         nextSong();
+        Future.delayed(Duration(milliseconds: 500), () {
+          _isNextSongCalled = false;
+        });
       }
     });
   }
+
+  // Getter para a playlist
+  List<Song> get playlist => _playlist;
 
   /// Carrega os favoritos salvos no SharedPreferences, preservando a ordem em que foram salvos.
   Future<void> loadFavorites() async {
@@ -55,7 +82,10 @@ class AudioProvider with ChangeNotifier {
       final Map<String, Song> songMap = { for (var song in _playlist) song.id : song };
 
       // Mapeia os IDs dos favoritos na ordem armazenada.
-      _favorites = favoriteIds.map((id) => songMap[id] ?? Song(id, '', '')).toList();
+      _favorites = favoriteIds
+          .where((id) => songMap.containsKey(id))
+          .map((id) => songMap[id]!)
+          .toList();
 
       // Remove itens inválidos (músicas sem título e URL)
       _favorites.removeWhere((song) => song.title.isEmpty && song.url.isEmpty);
@@ -74,17 +104,12 @@ class AudioProvider with ChangeNotifier {
 
   /// Toca uma música a partir de uma lista de reprodução personalizada, se fornecida.
   Future<void> playSong(Song song, int index, {List<Song>? playingList}) async {
+    // Atualiza a lista de reprodução ativa antes de definir a música
+    _currentPlayingList = playingList ?? _playlist;
+
     _currentSongTitle = song.title;
     _currentSongIndex = index;
 
-    // Se uma lista personalizada for fornecida, ela se torna a lista ativa; caso contrário, usa a _playlist.
-    if (playingList != null) {
-      _currentPlayingList = playingList;
-    } else {
-      _currentPlayingList = _playlist;
-    }
-
-    // Verifica se a URL da música é válida
     if (song.url.isEmpty) {
       print('URL da música está vazia: ${song.title}');
       return;
@@ -109,21 +134,18 @@ class AudioProvider with ChangeNotifier {
     } catch (e) {
       print('Erro ao reproduzir a música: $e');
     }
-
-    await JustAudioBackground.init();
   }
 
   /// Inicia a reprodução de uma música, garantindo que a lista ativa seja a de favoritos, se a música for um favorito.
   Future<void> playFavoriteSong(Song song) async {
-    print(_favorites);
     int index = _favorites.indexOf(song);
     if (index != -1) {
-      _currentPlayingList = _favorites; // Define a lista de reprodução atual como a lista de favoritos
-      await playSong(song, index, playingList: _currentPlayingList);
+      await playSong(song, index, playingList: List<Song>.from(_favorites));
     } else {
       print('A música não está nos favoritos.');
     }
   }
+
 
   Future<void> pauseSong() async {
     await _audioPlayer.pause();
@@ -137,41 +159,37 @@ class AudioProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  /// Avança para a próxima música na lista de reprodução atual.
+  void debugCurrentSongIndex() {
+    print('Índice atual da música: $_currentSongIndex');
+  }
+
   void nextSong() {
     if (_currentPlayingList.isEmpty) return;
-    if (_currentSongIndex < _currentPlayingList.length - 1) {
-      playSong(
-        _currentPlayingList[_currentSongIndex + 1],
-        _currentSongIndex + 1,
-        playingList: _currentPlayingList,
-      );
-    } else {
-      playSong(
-        _currentPlayingList[0],
-        0,
-        playingList: _currentPlayingList,
-      );
-    }
+
+    _currentSongIndex = (_currentSongIndex + 1) % _currentPlayingList.length;
+    Song nextSong = _currentPlayingList[_currentSongIndex];
+
+    debugCurrentSongIndex();
+    print('Tocando a próxima música: ${nextSong.title}');
+
+    playSong(nextSong, _currentSongIndex, playingList: _currentPlayingList).then((_) {
+      _isNextSongCalled = false;
+    });
   }
+
+
 
   /// Volta para a música anterior na lista de reprodução atual.
   void previousSong() {
     if (_currentPlayingList.isEmpty) return;
-    if (_currentSongIndex > 0) {
-      playSong(
-        _currentPlayingList[_currentSongIndex - 1],
-        _currentSongIndex - 1,
-        playingList: _currentPlayingList,
-      );
-    } else {
-      playSong(
-        _currentPlayingList[_currentPlayingList.length - 1],
-        _currentPlayingList.length - 1,
-        playingList: _currentPlayingList,
-      );
+
+    int newIndex = (_currentSongIndex > 0) ? _currentSongIndex - 1 : _currentPlayingList.length - 1;
+
+    if (newIndex >= 0 && newIndex < _currentPlayingList.length) {
+      playSong(_currentPlayingList[newIndex], newIndex, playingList: _currentPlayingList);
     }
   }
+
 
   Future<void> seek(double value) async {
     final newPosition =
@@ -206,3 +224,4 @@ class AudioProvider with ChangeNotifier {
   bool get isPlaying => _isPlaying;
   Duration get totalDuration => _totalDuration;
 }
+

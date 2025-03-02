@@ -1,4 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:just_audio/just_audio.dart';
+import 'package:provider/provider.dart';
+import '../audio/provider/audio_provider.dart';
+import '../layout/audio_progress_bar.dart';
+
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../audio/provider/audio_provider.dart';
 import '../layout/audio_progress_bar.dart';
@@ -45,11 +51,6 @@ class FavoritesScreen extends StatelessWidget {
               ),
               onDismissed: (direction) {
                 audioProvider.removeFromFavorites(song);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text('${song.title} removida dos favoritos'),
-                  ),
-                );
               },
               child: Container(
                 margin: itemMargin,
@@ -65,7 +66,7 @@ class FavoritesScreen extends StatelessWidget {
                         style: const TextStyle(color: Colors.white),
                       ),
                       onTap: () {
-                        audioProvider.playFavoriteSong(song); // Usando o novo metodo
+                        audioProvider.playFavoriteSong(song);
                       },
                     ),
                   ),
@@ -87,3 +88,4 @@ class FavoritesScreen extends StatelessWidget {
     );
   }
 }
+

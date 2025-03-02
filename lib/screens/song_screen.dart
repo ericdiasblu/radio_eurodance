@@ -70,16 +70,6 @@ class _SongsScreenState extends State<SongsScreen> {
                               audioProvider.addFavorite(song);
                             }
                           });
-
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(
-                                isFavorite
-                                    ? '${song.title} removido dos favoritos'
-                                    : '${song.title} adicionado aos favoritos',
-                              ),
-                            ),
-                          );
                         },
                       ),
                     ),
