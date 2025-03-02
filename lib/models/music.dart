@@ -9,7 +9,8 @@ class Song {
 
 class Playlist {
   final String name;
+  final String imagePath; // Caminho da imagem
   final List<Song> songs;
 
-  Playlist(this.name, this.songs);
+  Playlist(this.name, this.imagePath, this.songs);
 }

@@ -17,14 +17,18 @@ class AudioProvider with ChangeNotifier {
 
   List<Playlist> getAllPlaylists() {
     // Criando uma playlist principal com todas as músicas disponíveis
-    Playlist mainPlaylist = Playlist('Todas as músicas', _playlist);
+    Playlist mainPlaylist = Playlist(
+      'Todas as músicas',
+      'assets/home_image.png', // <-- Adicione um caminho válido para a imagem
+      _playlist,
+    );
 
-    // Se você tiver playlists categorizadas no futuro, pode adicioná-las aqui
+    // Lista de todas as playlists disponíveis
     List<Playlist> allPlaylists = [mainPlaylist];
 
-    // Retorne todas as playlists disponíveis
     return allPlaylists;
   }
+
 
   // Lista de reprodução atualmente ativa (pode ser a playlist completa ou a lista de favoritos)
   List<Song> _currentPlayingList = [];

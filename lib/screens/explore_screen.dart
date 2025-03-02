@@ -57,7 +57,13 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
     return Scaffold(
       body: Container(
-        color: Color(0xFF1E1E1E),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF1E1E1E), Color(0xFF023E8A)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+        ),
         child: Column(
           children: [
             SizedBox(height: 50),

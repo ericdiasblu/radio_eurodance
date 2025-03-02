@@ -4,8 +4,6 @@ import 'package:radio_eurodance/router/routes.dart';
 import 'package:radio_eurodance/screens/explore_screen.dart';
 import 'package:radio_eurodance/screens/favorite_screen.dart';
 import 'package:radio_eurodance/screens/home_screen.dart';
-import 'package:radio_eurodance/screens/offline_screen.dart';
-import 'package:radio_eurodance/screens/profile_screen.dart';
 
 import '../layout/layout_scaffold.dart';
 

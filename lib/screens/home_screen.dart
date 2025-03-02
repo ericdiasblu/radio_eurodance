@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:radio_eurodance/models/playlist.dart';
 import '../audio/provider/audio_provider.dart';
 import '../layout/audio_progress_bar.dart';
+import '../layout/image_slider.dart';
 import '../models/music.dart';
 import 'song_screen.dart';
 
@@ -13,81 +14,130 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final audioProvider = Provider.of<AudioProvider>(context);
 
-    // Verifica se a playlist já foi configurada
+    // Configura a playlist principal se ainda não estiver definida
     if (audioProvider.playlist.isEmpty) {
-      audioProvider.setPlaylist(playlists.expand((playlist) => playlist.songs).toList());
+      audioProvider.setPlaylist(
+          playlists.expand((playlist) => playlist.songs).toList());
     }
 
     return Scaffold(
-      backgroundColor: Colors.black,
-      appBar: AppBar(
-        title: Text(
-          'Rádio EuroDance',
-          style: TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Color(0xFFC1FF72),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            colors: [Color(0xFF1E1E1E), Color(0xFF023E8A)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
           ),
         ),
-        backgroundColor: Colors.black,
-        elevation: 0,
-        centerTitle: true,
-      ),
-      body: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        child: GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: 12,
-            mainAxisSpacing: 12,
-            childAspectRatio: 0.85,
-          ),
-          itemCount: playlists.length,
-          itemBuilder: (context, index) {
-            return GestureDetector(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => SongsScreen(playlists[index]),
+        child: SafeArea(
+          child: SingleChildScrollView(
+            physics: BouncingScrollPhysics(),
+            padding: EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Título do App
+                SizedBox(height: 20),
+                Text(
+                  'EuroMusic',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                    fontSize: 27,
                   ),
-                );
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  color: Color(0xFF1E1E1E),
-                  borderRadius: BorderRadius.circular(12),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.3),
-                      blurRadius: 6,
-                      spreadRadius: 2,
-                      offset: Offset(0, 3),
-                    ),
+                ),
+                SizedBox(height: 20),
+                // Imagem principal com sombra e cantos arredondados
+                // Dentro do seu build:
+                ImageSlider(
+                  imagePaths: [
+                    'assets/home_image.png',
+                    'assets/home_image.png',
+                    'assets/home_image.png',
+
                   ],
                 ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.music_note,
-                      size: 50,
-                      color: Color(0xFFC1FF72),
+
+                SizedBox(height: 30),
+                // Título das Playlists
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 10),
+                  child: Text(
+                    'Playlists Destaque',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
                     ),
-                    SizedBox(height: 10),
-                    Text(
-                      playlists[index].name,
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-              ),
-            );
-          },
+                SizedBox(height: 20),
+                // Lista de Playlists com rolagem horizontal
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: playlists.map((playlist) {
+                      return GestureDetector(
+                        onTap: () {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => SongsScreen(playlist),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          margin: const EdgeInsets.only(right: 12),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                height: 150,
+                                width: 150,
+                                decoration: BoxDecoration(
+                                  color: Color(0xFF1E1E1E),
+                                  borderRadius: BorderRadius.circular(12),
+                                  boxShadow: [
+                                    BoxShadow(
+                                      color: Colors.black26,
+                                      blurRadius: 10,
+                                      offset: Offset(0, 4),
+                                    ),
+                                  ],
+                                ),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: Image.asset(
+                                    playlist.imagePath,
+                                    fit: BoxFit.cover,
+                                  ),
+                                ),
+                              ),
+                              SizedBox(height: 10),
+                              Container(
+                                width: 150,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  playlist.name,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    }).toList(),
+                  ),
+                ),
+                SizedBox(height: 20), // Espaço inferior para finalizar o scroll
+              ],
+            ),
+          ),
         ),
       ),
       bottomNavigationBar: audioProvider.currentSongTitle.isNotEmpty
