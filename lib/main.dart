@@ -4,6 +4,8 @@ import 'package:provider/provider.dart';
 import 'package:radio_eurodance/audio/provider/audio_provider.dart';
 import 'package:radio_eurodance/router/router.dart';
 
+import 'audio/provider/playlist_provider.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized(); // Garante que o Flutter esteja pronto antes de iniciar
 
@@ -17,6 +19,7 @@ Future<void> main() async {
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (context) => AudioProvider()),
+        ChangeNotifierProvider(create: (context) => PlaylistProvider()),
       ],
       child: const RadioEurodanceApp(),
     ),

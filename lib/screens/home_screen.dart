@@ -1,23 +1,35 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:radio_eurodance/models/playlist.dart';
 import '../audio/provider/audio_provider.dart';
+import '../audio/provider/playlist_provider.dart';
 import '../layout/audio_progress_bar.dart';
 import '../layout/image_slider.dart';
 import '../models/music.dart';
 import 'song_screen.dart';
 
-class HomeScreen extends StatelessWidget {
-  final List<Playlist> playlists = getPlaylists();
+class HomeScreen extends StatefulWidget {
+  @override
+  _HomeScreenState createState() => _HomeScreenState();
+}
+
+class _HomeScreenState extends State<HomeScreen> {
+  @override
+  void initState() {
+    super.initState();
+    // Carrega as playlists quando a tela for iniciada
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<PlaylistProvider>(context, listen: false).loadAllPlaylists();
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     final audioProvider = Provider.of<AudioProvider>(context);
+    final playlistProvider = Provider.of<PlaylistProvider>(context);
 
-    // Configura a playlist principal se ainda não estiver definida
-    if (audioProvider.playlist.isEmpty) {
-      audioProvider.setPlaylist(
-          playlists.expand((playlist) => playlist.songs).toList());
+    // Configura a playlist principal se já carregou e ainda não estiver definida
+    if (playlistProvider.initialized && audioProvider.playlist.isEmpty) {
+      audioProvider.setPlaylist(playlistProvider.getAllSongs());
     }
 
     return Scaffold(
@@ -40,7 +52,7 @@ class HomeScreen extends StatelessWidget {
                 SizedBox(height: 20),
                 Row(
                   children: [
-                    SizedBox(width: 20,),
+                    SizedBox(width: 20),
                     Text(
                       'EuroMusic',
                       style: TextStyle(
@@ -53,7 +65,6 @@ class HomeScreen extends StatelessWidget {
                 ),
                 SizedBox(height: 20),
                 // Imagem principal com sombra e cantos arredondados
-                // Dentro do seu build:
                 ImageSlider(
                   imagePaths: [
                     'assets/home_image1.png',
@@ -76,11 +87,18 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 20),
-                // Lista de Playlists com rolagem horizontal
-                SingleChildScrollView(
+
+                // Mostrar indicador de carregamento ou lista de playlists
+                playlistProvider.isLoading
+                    ? Center(
+                  child: CircularProgressIndicator(
+                    color: Colors.white,
+                  ),
+                )
+                    : SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
                   child: Row(
-                    children: playlists.map((playlist) {
+                    children: playlistProvider.playlists.map((playlist) {
                       return GestureDetector(
                         onTap: () {
                           Navigator.push(
@@ -111,9 +129,34 @@ class HomeScreen extends StatelessWidget {
                                 ),
                                 child: ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
-                                  child: Image.asset(
-                                    playlist.imagePath,
-                                    fit: BoxFit.cover,
+                                  child: Stack(
+                                    children: [
+                                      Image.asset(
+                                        playlist.imagePath,
+                                        fit: BoxFit.cover,
+                                        height: 150,
+                                        width: 150,
+                                      ),
+                                      if (playlist.songs.isNotEmpty)
+                                        Positioned(
+                                          right: 10,
+                                          bottom: 10,
+                                          child: Container(
+                                            padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: Colors.black54,
+                                              borderRadius: BorderRadius.circular(10),
+                                            ),
+                                            child: Text(
+                                              '${playlist.songs.length}',
+                                              style: TextStyle(
+                                                color: Colors.white,
+                                                fontWeight: FontWeight.bold,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -138,7 +181,7 @@ class HomeScreen extends StatelessWidget {
                     }).toList(),
                   ),
                 ),
-                SizedBox(height: 20), // Espaço inferior para finalizar o scroll
+                SizedBox(height: 20),
               ],
             ),
           ),

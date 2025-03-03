@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:radio_eurodance/audio/provider/audio_provider.dart';
-import 'package:radio_eurodance/models/playlist.dart';
+import '../audio/provider/audio_provider.dart';
 import '../layout/audio_progress_bar.dart';
 import '../models/music.dart';
 
@@ -19,7 +18,10 @@ class _SongsScreenState extends State<SongsScreen> {
   void initState() {
     super.initState();
     final audioProvider = Provider.of<AudioProvider>(context, listen: false);
-    audioProvider.setPlaylist(widget.playlist.songs);
+    // Só define a playlist se ela tiver músicas
+    if (widget.playlist.songs.isNotEmpty) {
+      audioProvider.setPlaylist(widget.playlist.songs);
+    }
   }
 
   @override
@@ -39,11 +41,40 @@ class _SongsScreenState extends State<SongsScreen> {
         child: Column(
           children: [
             Expanded(
-              child: ListView.builder(
+              child: widget.playlist.songs.isEmpty
+                  ? Center(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.music_off,
+                      color: Colors.white54,
+                      size: 64,
+                    ),
+                    SizedBox(height: 16),
+                    Text(
+                      'Nenhuma música encontrada',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 18,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Text(
+                      'Verifique a pasta no Google Drive',
+                      style: TextStyle(
+                        color: Colors.white54,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+                  : ListView.builder(
                 itemCount: widget.playlist.songs.length,
                 itemBuilder: (context, index) {
                   var song = widget.playlist.songs[index];
-                  bool isFavorite = audioProvider.favorites.contains(song);
+                  // Use o método isFavorite para verificar pelo ID
+                  bool isFavorite = audioProvider.isFavorite(song);
 
                   return Card(
                     color: Color(0xFF2A2A2A),

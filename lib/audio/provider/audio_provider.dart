@@ -10,27 +10,13 @@ class AudioProvider with ChangeNotifier {
   // Getter para o AudioPlayer
   AudioPlayer get audioPlayer => _audioPlayer;
 
-  // Playlist completa (todas as músicas carregadas)
+  // Lista global com todas as músicas de todas as playlists
+  final List<Song> _allSongs = [];
+
+  // Playlist atualmente ativa (pode ser apenas uma das playlists carregadas)
   List<Song> _playlist = [];
 
-  // Adicione este método à sua classe AudioProvider
-
-  List<Playlist> getAllPlaylists() {
-    // Criando uma playlist principal com todas as músicas disponíveis
-    Playlist mainPlaylist = Playlist(
-      'Todas as músicas',
-      'assets/home_image.png', // <-- Adicione um caminho válido para a imagem
-      _playlist,
-    );
-
-    // Lista de todas as playlists disponíveis
-    List<Playlist> allPlaylists = [mainPlaylist];
-
-    return allPlaylists;
-  }
-
-
-  // Lista de reprodução atualmente ativa (pode ser a playlist completa ou a lista de favoritos)
+  // Lista de reprodução atualmente ativa (pode ser a playlist ou a lista de favoritos)
   List<Song> _currentPlayingList = [];
 
   String _currentSongTitle = '';
@@ -38,11 +24,12 @@ class AudioProvider with ChangeNotifier {
   Duration _totalDuration = Duration.zero;
   int _currentSongIndex = 0;
   bool _isPlaying = false;
-
-  // Lista para armazenar músicas favoritas
-  List<Song> _favorites = [];
-
   bool _isNextSongCalled = false; // Variável de controle
+
+  // Lista para armazenar IDs de músicas favoritas (global, com IDs únicos)
+  List<String> _favoriteIds = [];
+  // Lista para armazenar músicas favoritas (objetos completos)
+  List<Song> _favorites = [];
 
   AudioProvider() {
     _audioPlayer.positionStream.listen((position) {
@@ -63,7 +50,8 @@ class AudioProvider with ChangeNotifier {
       notifyListeners();
 
       // Verifica se a música terminou e evita chamadas duplicadas
-      if (state.processingState == ProcessingState.completed && !_isNextSongCalled) {
+      if (state.processingState == ProcessingState.completed &&
+          !_isNextSongCalled) {
         _isNextSongCalled = true;
         nextSong();
         Future.delayed(Duration(milliseconds: 500), () {
@@ -73,57 +61,64 @@ class AudioProvider with ChangeNotifier {
     });
   }
 
-  // Getter para a playlist
+  // Getter para a playlist atualmente ativa
   List<Song> get playlist => _playlist;
 
-  /// Carrega os favoritos salvos no SharedPreferences, preservando a ordem em que foram salvos.
+  // Getter para a lista global de favoritos
+  List<Song> get favorites => _favorites;
+
+  /// Carrega os favoritos salvos no SharedPreferences
   Future<void> loadFavorites() async {
     final prefs = await SharedPreferences.getInstance();
     final List<String>? favoriteIds = prefs.getStringList('favorites');
-
     if (favoriteIds != null) {
-      // Cria um mapa para lookup rápido com base na _playlist.
-      final Map<String, Song> songMap = { for (var song in _playlist) song.id : song };
-
-      // Mapeia os IDs dos favoritos na ordem armazenada.
-      _favorites = favoriteIds
-          .where((id) => songMap.containsKey(id))
-          .map((id) => songMap[id]!)
-          .toList();
-
-      // Remove itens inválidos (músicas sem título e URL)
-      _favorites.removeWhere((song) => song.title.isEmpty && song.url.isEmpty);
+      _favoriteIds = favoriteIds;
+      _updateFavoritesFromIds();
       notifyListeners();
     }
   }
 
-  /// Define a playlist completa e, em seguida, carrega os favoritos.
+  /// Atualiza a lista de favoritos com base nos IDs salvos e na lista global de músicas
+  void _updateFavoritesFromIds() {
+    final Map<String, Song> songMap = {};
+    for (var song in _allSongs) {
+      songMap[song.id] = song;
+    }
+    _favorites = _favoriteIds
+        .where((id) => songMap.containsKey(id))
+        .map((id) => songMap[id]!)
+        .toList();
+
+    _favorites.removeWhere((song) => song.title.isEmpty && song.url.isEmpty);
+  }
+
+  /// Define a playlist ativa e adiciona as músicas à lista global, sem duplicatas
   Future<void> setPlaylist(List<Song> songs) async {
     _playlist = songs;
+    // Adiciona as músicas carregadas à lista global, se ainda não estiverem presentes
+    for (var song in songs) {
+      if (!_allSongs.any((s) => s.id == song.id)) {
+        _allSongs.add(song);
+      }
+    }
     await loadFavorites();
-    // Inicialmente, a lista de reprodução ativa é a playlist completa.
     _currentPlayingList = _playlist;
     notifyListeners();
   }
 
-  /// Toca uma música a partir de uma lista de reprodução personalizada, se fornecida.
+  /// Toca uma música a partir de uma lista de reprodução personalizada, se fornecida
   Future<void> playSong(Song song, int index, {List<Song>? playingList}) async {
-    // Atualiza a lista de reprodução ativa antes de definir a música
     _currentPlayingList = playingList ?? _playlist;
-
     _currentSongTitle = song.title;
     _currentSongIndex = index;
-
     if (song.url.isEmpty) {
       print('URL da música está vazia: ${song.title}');
       return;
     }
-
     final mediaItem = MediaItem(
       id: song.id,
       title: song.title,
     );
-
     try {
       await _audioPlayer.setAudioSource(
         AudioSource.uri(
@@ -131,7 +126,6 @@ class AudioProvider with ChangeNotifier {
           tag: mediaItem,
         ),
       );
-
       await _audioPlayer.play();
       _isPlaying = true;
       notifyListeners();
@@ -149,7 +143,6 @@ class AudioProvider with ChangeNotifier {
       print('A música não está nos favoritos.');
     }
   }
-
 
   Future<void> pauseSong() async {
     await _audioPlayer.pause();
@@ -169,31 +162,26 @@ class AudioProvider with ChangeNotifier {
 
   void nextSong() {
     if (_currentPlayingList.isEmpty) return;
-
     _currentSongIndex = (_currentSongIndex + 1) % _currentPlayingList.length;
     Song nextSong = _currentPlayingList[_currentSongIndex];
-
     debugCurrentSongIndex();
     print('Tocando a próxima música: ${nextSong.title}');
-
-    playSong(nextSong, _currentSongIndex, playingList: _currentPlayingList).then((_) {
+    playSong(nextSong, _currentSongIndex,
+        playingList: _currentPlayingList).then((_) {
       _isNextSongCalled = false;
     });
   }
 
-
-
   /// Volta para a música anterior na lista de reprodução atual.
   void previousSong() {
     if (_currentPlayingList.isEmpty) return;
-
-    int newIndex = (_currentSongIndex > 0) ? _currentSongIndex - 1 : _currentPlayingList.length - 1;
-
+    int newIndex =
+    (_currentSongIndex > 0) ? _currentSongIndex - 1 : _currentPlayingList.length - 1;
     if (newIndex >= 0 && newIndex < _currentPlayingList.length) {
-      playSong(_currentPlayingList[newIndex], newIndex, playingList: _currentPlayingList);
+      playSong(_currentPlayingList[newIndex], newIndex,
+          playingList: _currentPlayingList);
     }
   }
-
 
   Future<void> seek(double value) async {
     final newPosition =
@@ -201,31 +189,51 @@ class AudioProvider with ChangeNotifier {
     await _audioPlayer.seek(newPosition);
   }
 
-  List<Song> get favorites => _favorites;
-
+  /// Adiciona uma música aos favoritos (caso ainda não esteja na lista)
   void addFavorite(Song song) {
-    if (!_favorites.contains(song)) {
+    if (!_favoriteIds.contains(song.id)) {
+      _favoriteIds.add(song.id);
       _favorites.add(song);
       saveFavorites();
       notifyListeners();
     }
   }
 
+  /// Remove uma música dos favoritos
   void removeFromFavorites(Song song) {
-    _favorites.remove(song);
+    _favoriteIds.remove(song.id);
+    _favorites.removeWhere((s) => s.id == song.id);
     saveFavorites();
     notifyListeners();
   }
 
-  Future<void> saveFavorites() async {
-    final prefs = await SharedPreferences.getInstance();
-    final List<String> favoriteIds = _favorites.map((song) => song.id).toList();
-    await prefs.setStringList('favorites', favoriteIds);
+  /// Verifica se uma música é favorita
+  bool isFavorite(Song song) {
+    return _favoriteIds.contains(song.id);
   }
 
+  /// Salva a lista de IDs de favoritos no SharedPreferences
+  Future<void> saveFavorites() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('favorites', _favoriteIds);
+  }
+
+  // Getters para informações de reprodução
   String get currentSongTitle => _currentSongTitle;
   double get progress => _progress;
   bool get isPlaying => _isPlaying;
   Duration get totalDuration => _totalDuration;
+
+  /// Método para obter todas as playlists disponíveis (inclui "Todas as músicas")
+  List<Playlist> getAllPlaylists() {
+    Playlist mainPlaylist = Playlist(
+      'Todas as músicas',
+      'assets/home_image.png',
+      _playlist,
+    );
+    List<Playlist> allPlaylists = [mainPlaylist];
+    return allPlaylists;
+  }
 }
+
 
