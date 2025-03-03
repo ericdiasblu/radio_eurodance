@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class ImageSlider extends StatefulWidget {
   final List<String> imagePaths;
@@ -15,7 +16,6 @@ class _ImageSliderState extends State<ImageSlider> {
   @override
   void initState() {
     super.initState();
-    // Atualiza o indicador de página conforme o usuário rola ou aperta a seta
     _pageController.addListener(() {
       int next = _pageController.page!.round();
       if (_currentPage != next) {
@@ -32,23 +32,17 @@ class _ImageSliderState extends State<ImageSlider> {
     super.dispose();
   }
 
-  void _nextPage() {
-    if (_currentPage < widget.imagePaths.length - 1) {
-      _pageController.nextPage(
-        duration: Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
+  void _openLink() async {
+    const url = 'https://www.youtube.com/@flashbackpassinhosederlibety/'; // Substitua pelo link desejado
+    final Uri uri = Uri.parse(url);
+
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    } else {
+      debugPrint('Não foi possível abrir o link: $url');
     }
   }
 
-  void _backPage() {
-    if (_currentPage > 0) {
-      _pageController.previousPage(
-        duration: Duration(milliseconds: 300),
-        curve: Curves.easeInOut,
-      );
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,9 +68,16 @@ class _ImageSliderState extends State<ImageSlider> {
               // Slider de imagens
               PageView(
                 controller: _pageController,
-                children: widget.imagePaths
-                    .map((path) => Image.asset(path, fit: BoxFit.cover))
-                    .toList(),
+                children: widget.imagePaths.map((path) {
+                  // Verifica se a imagem é a home_image3
+                  if (path == 'assets/home_image3.png') {
+                    return GestureDetector(
+                      onTap: _openLink,
+                      child: Image.asset(path, fit: BoxFit.cover),
+                    );
+                  }
+                  return Image.asset(path, fit: BoxFit.cover);
+                }).toList(),
               ),
               // Indicadores (bolinhas) na parte inferior central
               Positioned(

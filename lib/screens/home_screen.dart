@@ -38,23 +38,27 @@ class HomeScreen extends StatelessWidget {
               children: [
                 // Título do App
                 SizedBox(height: 20),
-                Text(
-                  'EuroMusic',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 27,
-                  ),
+                Row(
+                  children: [
+                    SizedBox(width: 20,),
+                    Text(
+                      'EuroMusic',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 27,
+                      ),
+                    ),
+                  ],
                 ),
                 SizedBox(height: 20),
                 // Imagem principal com sombra e cantos arredondados
                 // Dentro do seu build:
                 ImageSlider(
                   imagePaths: [
-                    'assets/home_image.png',
-                    'assets/home_image.png',
-                    'assets/home_image.png',
-
+                    'assets/home_image1.png',
+                    'assets/home_image2.png',
+                    'assets/home_image3.png',
                   ],
                 ),
 
