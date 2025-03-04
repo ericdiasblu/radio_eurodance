@@ -9,7 +9,7 @@
 
     <application
         android:usesCleartextTraffic="true"
-        android:label="radio_eurodance"
+        android:label="EuroMusic"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
 
