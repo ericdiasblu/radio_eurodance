@@ -1,6 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
-import '../models/music.dart';
+import '../data/models/music.dart';
 
 class GoogleDriveService {
   final String apiKey = "AIzaSyAkBHHqjeJa0C8vcWrKJeLA8977M9iqm5s";
@@ -46,7 +46,7 @@ class GoogleDriveService {
 
   // Verifica se o arquivo é um arquivo de áudio
   bool _isAudioFile(Map<String, dynamic> file) {
-    return file['mimeType'].toString().contains('audio') ||
+    return file['mimeType'].toString().contains('providers') ||
         file['name'].toString().toLowerCase().endsWith('.mp3') ||
         file['name'].toString().toLowerCase().endsWith('.wav') ||
         file['name'].toString().toLowerCase().endsWith('.ogg');

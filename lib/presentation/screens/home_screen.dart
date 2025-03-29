@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../audio/provider/audio_provider.dart';
-import '../audio/provider/playlist_provider.dart';
-import '../layout/audio_progress_bar.dart';
-import '../layout/image_slider.dart';
-import '../models/music.dart';
+import '../../data/providers/audio/audio_provider.dart';
+import '../../data/providers/audio/playlist_provider.dart';
+import '../widgets/audio_progress_bar.dart';
+import '../widgets/image_slider.dart';
 import 'song_screen.dart';
 
 class HomeScreen extends StatefulWidget {

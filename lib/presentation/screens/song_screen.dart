@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:io';
-import '../audio/provider/audio_provider.dart';
-import '../layout/audio_progress_bar.dart';
-import '../models/music.dart';
+import '../../data/models/music.dart';
+import '../../data/providers/audio/audio_provider.dart';
+import '../widgets/audio_progress_bar.dart';
 
 class SongScreen extends StatefulWidget {
   final Playlist playlist;

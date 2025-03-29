@@ -1,16 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:audio_service/audio_service.dart';
 import 'package:just_audio_background/just_audio_background.dart';
 import 'package:provider/provider.dart';
-import 'package:radio_eurodance/audio/provider/audio_provider.dart';
-import 'package:radio_eurodance/audio/provider/playlist_provider.dart';
-import 'package:radio_eurodance/router/router.dart';
+import 'core/router/router.dart';
+import 'data/providers/audio/audio_provider.dart';
+import 'data/providers/audio/playlist_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await JustAudioBackground.init(
-    androidNotificationChannelId: 'com.ryanheise.bg_demo.channel.audio',
+    androidNotificationChannelId: 'com.ryanheise.bg_demo.channel.providers',
     androidNotificationChannelName: 'Audio playback',
     androidNotificationOngoing: true,
   );

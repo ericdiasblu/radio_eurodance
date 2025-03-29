@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:radio_eurodance/audio/provider/audio_provider.dart';
+
+import '../../data/providers/audio/audio_provider.dart';
 
 class AudioProgressBar extends StatefulWidget {
   const AudioProgressBar({Key? key}) : super(key: key);
