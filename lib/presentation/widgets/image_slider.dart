@@ -32,20 +32,37 @@ class _ImageSliderState extends State<ImageSlider> {
     super.dispose();
   }
 
-  void _openLink() async {
-    const url = 'https://www.youtube.com/@flashbackpassinhosederlibety/'; // Substitua pelo link desejado
-    final Uri uri = Uri.parse(url);
+  Future<void> _openLink(String urlString) async {
+    // Certifique-se de que a URL esteja corretamente formatada
+    final Uri url = Uri.parse(urlString);
 
-    if (await canLaunchUrl(uri)) {
-      await launchUrl(uri, mode: LaunchMode.externalApplication);
-    } else {
-      debugPrint('Não foi possível abrir o link: $url');
+    try {
+      // Use o método launchUrl com as opções recomendadas
+      if (!await launchUrl(
+        url,
+        mode: LaunchMode.externalApplication,
+        webViewConfiguration: const WebViewConfiguration(
+          enableJavaScript: true,
+          enableDomStorage: true,
+        ),
+      )) {
+        throw Exception('Não foi possível abrir $url');
+      }
+    } catch (e) {
+      debugPrint('Erro ao abrir o link: $e');
+      // Mostre um snackbar para o usuário
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Não foi possível abrir o link: $urlString')),
+        );
+      }
     }
   }
 
-
   @override
   Widget build(BuildContext context) {
+    const String youtubeUrl = 'https://www.youtube.com/@flashbackpassinhosederlibety';
+
     return Center(
       child: Container(
         width: 350,
@@ -57,7 +74,7 @@ class _ImageSliderState extends State<ImageSlider> {
               color: Colors.black.withOpacity(0.5),
               blurRadius: 20,
               spreadRadius: 2,
-              offset: Offset(4, 4),
+              offset: const Offset(4, 4),
             ),
           ],
         ),
@@ -66,19 +83,41 @@ class _ImageSliderState extends State<ImageSlider> {
           child: Stack(
             children: [
               // Slider de imagens
-              PageView(
+              PageView.builder(
                 controller: _pageController,
-                children: widget.imagePaths.map((path) {
-                  // Verifica se a imagem é a home_image3
-                  if (path == 'assets/home_image3.png') {
-                    return GestureDetector(
-                      onTap: _openLink,
-                      child: Image.asset(path, fit: BoxFit.cover),
+                itemCount: widget.imagePaths.length,
+                itemBuilder: (context, index) {
+                  final path = widget.imagePaths[index];
+
+                  // Verifica se a imagem é a terceira (índice 2)
+                  if (index == 2) {
+                    return InkWell(
+                      onTap: () => _openLink(youtubeUrl),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Image.asset(path, fit: BoxFit.cover),
+                          Container(
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.black.withOpacity(0.5),
+                            ),
+                            padding: const EdgeInsets.all(8),
+                            child: const Icon(
+                              Icons.play_arrow,
+                              size: 50,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ],
+                      ),
                     );
                   }
+
                   return Image.asset(path, fit: BoxFit.cover);
-                }).toList(),
+                },
               ),
+
               // Indicadores (bolinhas) na parte inferior central
               Positioned(
                 bottom: 10,
@@ -88,7 +127,7 @@ class _ImageSliderState extends State<ImageSlider> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(widget.imagePaths.length, (index) {
                     return Container(
-                      margin: EdgeInsets.symmetric(horizontal: 4),
+                      margin: const EdgeInsets.symmetric(horizontal: 4),
                       width: _currentPage == index ? 12 : 8,
                       height: _currentPage == index ? 12 : 8,
                       decoration: BoxDecoration(

@@ -22,12 +22,6 @@ List<Playlist> getPlaylists() {
       [],
       folderId: '', // Substitua pelo ID da pasta do Google Drive
     ),
-    Playlist(
-      'Anos 60',
-      'assets/anos90.webp',
-      [],
-      folderId: '', // Substitua pelo ID da pasta do Google Drive
-    ),
   ];
 }
 

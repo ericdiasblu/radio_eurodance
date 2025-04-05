@@ -82,7 +82,7 @@ class _EnhancedExploreScreenState extends State<ExploreScreen> {
                   children: [
                     SizedBox(height: 20),
                     Text(
-                      'Explorar Músicas',
+                      'Buscar Músicas',
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: 24,
