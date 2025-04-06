@@ -180,7 +180,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     }).toList(),
                   ),
                 ),
-                SizedBox(height: 20),
+                SizedBox(height: 130),
               ],
             ),
           ),
