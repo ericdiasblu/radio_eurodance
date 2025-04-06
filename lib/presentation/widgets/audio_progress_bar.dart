@@ -71,108 +71,110 @@ class _AudioProgressBarState extends State<AudioProgressBar> {
                 switchInCurve: Curves.easeIn,
                 switchOutCurve: Curves.easeOut,
                 child: _isExpanded
-                    ? Column(
-                  key: ValueKey('expanded'),
-                  mainAxisSize: MainAxisSize.min,
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  children: [
-                    // Título da música
-                    Flexible(
-                      child: Text(
-                        audioProvider.currentSongTitle,
-                        style: TextStyle(
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                          fontSize: 16,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    // Slider minimalista
-                    SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        trackHeight: 4.0,
-                        activeTrackColor: Color(0xFFC1FF72),
-                        inactiveTrackColor: Colors.white24,
-                        thumbShape:
-                        RoundSliderThumbShape(enabledThumbRadius: 6),
-                        thumbColor: Color(0xFFC1FF72),
-                        overlayColor: Color(0xFFC1FF72).withOpacity(0.2),
-                        overlayShape:
-                        RoundSliderOverlayShape(overlayRadius: 14),
-                      ),
-                      child: Slider(
-                        value: audioProvider.progress,
-                        onChanged: (value) {
-                          audioProvider.seek(value);
-                        },
-                      ),
-                    ),
-                    // Controles de reprodução e tempos
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        // Tempo atual
-                        Text(
-                          _formatDuration(Duration(
-                              seconds: (audioProvider.progress *
-                                  audioProvider.totalDuration.inSeconds)
-                                  .toInt())),
+                    ? SingleChildScrollView(
+                      child: Column(
+                                        key: ValueKey('expanded'),
+                                        mainAxisSize: MainAxisSize.min,
+                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                        children: [
+                      // Título da música
+                      Flexible(
+                        child: Text(
+                          audioProvider.currentSongTitle,
                           style: TextStyle(
-                              color: Colors.white70, fontSize: 12),
+                            fontWeight: FontWeight.w600,
+                            color: Colors.white,
+                            fontSize: 16,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                         ),
-                        // Botões de controle
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            IconButton(
-                              icon: Icon(Icons.skip_previous,
-                                  color: Colors.white, size: 28),
-                              onPressed: audioProvider.previousSong,
-                            ),
-                            SizedBox(width: 8),
-                            GestureDetector(
-                              onTap: () {
-                                if (audioProvider.isPlaying) {
-                                  audioProvider.pauseSong();
-                                } else {
-                                  audioProvider.resumeSong();
-                                }
-                              },
-                              child: Container(
-                                padding: EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Color(0xFFC1FF72),
-                                  shape: BoxShape.circle,
-                                ),
-                                child: Icon(
-                                  audioProvider.isPlaying
-                                      ? Icons.pause
-                                      : Icons.play_arrow,
-                                  color: Colors.black,
-                                  size: 28,
+                      ),
+                      // Slider minimalista
+                      SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          trackHeight: 4.0,
+                          activeTrackColor: Color(0xFFC1FF72),
+                          inactiveTrackColor: Colors.white24,
+                          thumbShape:
+                          RoundSliderThumbShape(enabledThumbRadius: 6),
+                          thumbColor: Color(0xFFC1FF72),
+                          overlayColor: Color(0xFFC1FF72).withOpacity(0.2),
+                          overlayShape:
+                          RoundSliderOverlayShape(overlayRadius: 14),
+                        ),
+                        child: Slider(
+                          value: audioProvider.progress,
+                          onChanged: (value) {
+                            audioProvider.seek(value);
+                          },
+                        ),
+                      ),
+                      // Controles de reprodução e tempos
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          // Tempo atual
+                          Text(
+                            _formatDuration(Duration(
+                                seconds: (audioProvider.progress *
+                                    audioProvider.totalDuration.inSeconds)
+                                    .toInt())),
+                            style: TextStyle(
+                                color: Colors.white70, fontSize: 12),
+                          ),
+                          // Botões de controle
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(Icons.skip_previous,
+                                    color: Colors.white, size: 28),
+                                onPressed: audioProvider.previousSong,
+                              ),
+                              SizedBox(width: 8),
+                              GestureDetector(
+                                onTap: () {
+                                  if (audioProvider.isPlaying) {
+                                    audioProvider.pauseSong();
+                                  } else {
+                                    audioProvider.resumeSong();
+                                  }
+                                },
+                                child: Container(
+                                  padding: EdgeInsets.all(12),
+                                  decoration: BoxDecoration(
+                                    color: Color(0xFFC1FF72),
+                                    shape: BoxShape.circle,
+                                  ),
+                                  child: Icon(
+                                    audioProvider.isPlaying
+                                        ? Icons.pause
+                                        : Icons.play_arrow,
+                                    color: Colors.black,
+                                    size: 28,
+                                  ),
                                 ),
                               ),
-                            ),
-                            SizedBox(width: 8),
-                            IconButton(
-                              icon: Icon(Icons.skip_next,
-                                  color: Colors.white, size: 28),
-                              onPressed: audioProvider.nextSong,
-                            ),
-                          ],
-                        ),
-                        // Duração total
-                        Text(
-                          _formatDuration(audioProvider.totalDuration),
-                          style: TextStyle(
-                              color: Colors.white70, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ],
-                )
+                              SizedBox(width: 8),
+                              IconButton(
+                                icon: Icon(Icons.skip_next,
+                                    color: Colors.white, size: 28),
+                                onPressed: audioProvider.nextSong,
+                              ),
+                            ],
+                          ),
+                          // Duração total
+                          Text(
+                            _formatDuration(audioProvider.totalDuration),
+                            style: TextStyle(
+                                color: Colors.white70, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                                        ],
+                                      ),
+                    )
                     : Center(
                   key: ValueKey('collapsed'),
                   child: GestureDetector(

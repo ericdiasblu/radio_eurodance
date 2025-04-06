@@ -20,7 +20,7 @@ List<Playlist> getPlaylists() {
       'Anos 70',
       'assets/anos70.jpeg',
       [],
-      folderId: '', // Substitua pelo ID da pasta do Google Drive
+      folderId: '1hb7r8Vp917TRNw1s8UKC6sAhTXFWDNIm', // Substitua pelo ID da pasta do Google Drive
     ),
   ];
 }
