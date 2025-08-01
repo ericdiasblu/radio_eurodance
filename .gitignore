@@ -47,3 +47,58 @@ app.*.map.json
 # Chave da PlayStore
 key.properties
 app/upload-keystore.jks
+
+# Arquivos de configuração sensíveis
+*.keystore
+*.jks
+google-services.json
+GoogleService-Info.plist
+
+# Arquivos de ambiente e segredos
+.env
+.env.*
+secrets.json
+config.json
+credentials.json
+
+# APIs Keys e Tokens (caso sejam adicionados em arquivos separados)
+api_keys.dart
+secrets.dart
+config.dart
+lib/core/config/api_keys.dart
+
+# Certificados iOS
+*.mobileprovision
+*.p12
+*.cer
+
+# Firebase
+firebase_options.dart
+google_app_id.json
+
+# Logs e debugging
+*.log
+logs/
+crash_reports/
+
+# Backup files
+*.backup
+*.bak
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# VSCode settings que podem conter informações sensíveis
+.vscode/settings.json
+.vscode/launch.json
+
+# Arquivos temporários do sistema
+*.tmp
+*.temp

@@ -1,9 +1,10 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../data/models/music.dart';
+import '../core/config/api_keys.dart';
 
 class GoogleDriveService {
-  final String apiKey = "AIzaSyAkBHHqjeJa0C8vcWrKJeLA8977M9iqm5s";
+  final String apiKey = ApiKeys.googleDriveApiKey;
 
   // Método para buscar músicas de uma pasta específica
   Future<List<Song>> getSongsFromFolder(String folderId) async {
@@ -27,7 +28,9 @@ class GoogleDriveService {
 
             // Gera um ID único combinando folderId e songId
             String uniqueSongId = "${folderId}_$songId";
-            songs.add(Song.fromGoogleDrive(uniqueSongId, fileName, fileId, folderId));
+            songs.add(
+              Song.fromGoogleDrive(uniqueSongId, fileName, fileId, folderId),
+            );
             songId++;
           }
         }
@@ -60,17 +63,20 @@ class GoogleDriveService {
     }
 
     // Remove IDs e sequências indesejadas do nome
-    fileName = fileName
-        .replaceAll(RegExp(r'\(ID:[^)]*\)'), '')
-        .replaceAll(RegExp(r'\[ID:[^\]]*\]'), '')
-        .replaceAll(RegExp(r'[a-zA-Z0-9_-]{25,}'), '')
-        .trim();
+    fileName =
+        fileName
+            .replaceAll(RegExp(r'\(ID:[^)]*\)'), '')
+            .replaceAll(RegExp(r'\[ID:[^\]]*\]'), '')
+            .replaceAll(RegExp(r'[a-zA-Z0-9_-]{25,}'), '')
+            .trim();
 
     return fileName;
   }
 
   // Carrega todas as músicas de todas as pastas definidas nas playlists
-  Future<Map<String, List<Song>>> loadAllPlaylists(List<Playlist> playlists) async {
+  Future<Map<String, List<Song>>> loadAllPlaylists(
+    List<Playlist> playlists,
+  ) async {
     Map<String, List<Song>> loadedPlaylists = {};
 
     for (var playlist in playlists) {
